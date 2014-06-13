@@ -3,3 +3,6 @@
 node_modules
 exercises-packed
 exercises-packed.zip
+
+# sublime user settings
+*.sublime-workspace

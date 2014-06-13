@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html data-require="math graphie graphie-helpers">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Arithmetic Series - Stairs I</title>
+    <script data-main="../local-only/main.js" src="../local-only/require.js"></script>
+    <script>
+        // ##########################################################################################
+        // Utility functions
+
+        var runFunction = function(fun, name) {
+            return '(' + fun.toString() + ')()\n//@ sourceURL=' + name;
+        };
+    </script>
+
+
+    <!-- 
+    ##########################################################################################
+    Problem 1 HTML code
+    -->
+    <code type="text/html" id="problem1Components" style="display:none;">
+        <div style="position:absolute; 
+            left:0; top:0; 
+            white-space: normal;
+            border-style: solid;
+            border-width: 1px;
+            width: 80px;">
+
+            <span>X:</span> <span id="x">0</span><br />
+            <span>Y:</span> <span id="y">0</span>
+        </div>
+    </code>
+    <script>
+        "use strict";
+
+        function problem1() {
+            // problem variables
+            var $window,
+                $problemEl,
+                $viewport,
+                $xEl, $yEl;
+
+            // problem constants
+            var nViewportOffset = 1,
+                wViewport = 500,
+                hViewport = 500;
+
+
+            // ##########################################################################################
+            // Problem 1 setup
+
+            /**
+             * Add the divs and other HTML elements to the exercise.
+             */
+            var addComponents = function() {
+                var problem1Components = $('#problem1Components').html();
+                $problemEl.append(problem1Components);
+
+                $xEl = $problemEl.find('#x'),
+                $yEl = $problemEl.find('#y');
+            };
+
+            var setupViewport = function() {
+                style({ stroke: "#444444", "stroke-width": 1 });
+
+                $window = $(window);
+                $problemEl = $('#stairs-1');
+                $problemEl.css({
+                    "style": "position:relative;"
+                });
+                $viewport = $('#stairs-1 > svg');
+                
+                $viewport.click(function(evt) {
+                    var offset_t = $viewport.offset().top - $window.scrollTop();
+                    var offset_l = $viewport.offset().left - $window.scrollLeft();
+
+                    var x = Math.round( (evt.clientX - offset_l) );
+                    var y = Math.round( (evt.clientY - offset_t) );
+
+                    var rangeX = range[0];
+                    var rangeY = range[1];
+
+                    x -= rangeX[0];         // subract x origin offset
+                    y = rangeY[1] - y;      // y is inverted
+
+                    onClickStairs(x, y);
+                });
+            };
+
+            var drawStairs = function() {
+                var nSteps = randRange(3, 6) * 1;
+
+                var nStepsX = nSteps;
+                var nStepsY = nSteps-1;
+
+                var wStep = wViewport / nStepsX;
+                var hStep = hViewport / nStepsY;
+                var scale = 1;
+                var range = [
+                    [-nViewportOffset, wStep * nStepsX + nViewportOffset], 
+                    [-nViewportOffset, hStep * nStepsY + nViewportOffset]];
+
+                init({
+                    range: range,
+                    scale: [scale, scale]
+                });
+
+                // draw stairs
+                var stairPath = [];
+                for (var i = 0; i < nSteps; ++i) {
+                    var x = i * wStep;
+                    var y = i * hStep;
+                    stairPath.push([x, y]);
+                    stairPath.push([x + wStep, y]);
+                }
+
+                //console.warn(stairPath);
+
+                path(stairPath);
+            };
+
+
+            // ##########################################################################################
+            // Problem 1 events
+
+            /**
+             * This method is called when the user clicks on the stairs at the given coordinates.
+             */
+            var onClickStairs = function(x, y) {
+                $xEl.text(x);
+                $yEl.text(y);
+            };
+
+
+            // ##########################################################################################
+            // Problem 1 main
+
+            (function main() {
+                // define the viewport
+                setupViewport();
+
+                // add Problem 1 GUI elements
+                addComponents();
+
+                // draw stairs
+                drawStairs();
+            })();
+        };
+    </script>
+</head>
+<body>
+    <div class="exercise">
+        <div class="vars">
+            <!-- <var id="NUMBER">Number(SIGN + INT + FRAC)</var> -->
+        </div>
+
+        <div class="problems">
+            <!-- Stairs problem -->
+            <div id="stairs-q1">
+                <div class="question">
+                    <p>Some question?</p>
+                </div>
+                <div class="problem">
+                    <div class="graphie" id="stairs-1">
+                        try {
+                            eval(runFunction(problem1, 'problem1'));
+                        }
+                        catch (err) {
+                            console.error(err.stack);
+                        }
+                    </div>
+                    <p style="font-size:70%; color:grey"><strong>NOTE:</strong> Angles not drawn to scale.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hints">
+        </div>
+    </div>
+</body>
+</html>
