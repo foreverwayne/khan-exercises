@@ -3,42 +3,38 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Arithmetic Series - Stairs I</title>
+    <script>
+        window.onerror = function(msg, filename, row, column, err) {
+            console.error(err.stack);
+        };
+    </script>
     <script data-main="../local-only/main.js" src="../local-only/require.js"></script>
     <script>
         // ##########################################################################################
         // Utility functions
 
-        var runFunction = function(fun, name) {
+        var serializeFunctionCall = function(fun, name) {
             return '(' + fun.toString() + ')()\n//@ sourceURL=' + name;
+        };
+
+        // ##########################################################################################
+        // Angular utilities
+
+        // remember all defined apps
+        var apps = [];
+
+        var addApp = function(name, deps) {
+            var app = angular.module(name, deps || []);
+            apps.push(name);
+            return app;
         };
     </script>
 
-
-    <!-- 
-    ##########################################################################################
-    Problem 1 HTML code
-    -->
-    <code type="text/html" id="problem1Components" style="display:none;">
-        <div style="position:absolute; 
-            left:0; top:0; 
-            white-space: normal;
-            border-style: solid;
-            border-width: 1px;
-            width: 80px;">
-
-            <span>X:</span> <span id="x">0</span><br />
-            <span>Y:</span> <span id="y">0</span>
-        </div>
-    </code>
     <script>
         "use strict";
 
         function problem1() {
             // problem variables
-            var $window,
-                $problemEl,
-                $viewport,
-                $xEl, $yEl;
 
             // problem constants
             var nViewportOffset = 1,
@@ -47,32 +43,25 @@
 
 
             // ##########################################################################################
-            // Problem 1 setup
+            // Problem 1 UI
 
-            /**
-             * Add the divs and other HTML elements to the exercise.
-             */
-            var addComponents = function() {
-                var problem1Components = $('#problem1Components').html();
-                $problemEl.append(problem1Components);
+            var scope, compile;
+            var $window = $(window);
 
-                $xEl = $problemEl.find('#x'),
-                $yEl = $problemEl.find('#y');
-            };
+            // create angular app
+            var app = addApp('problem1App');
 
-            var setupViewport = function() {
-                style({ stroke: "#444444", "stroke-width": 1 });
+            // define angular controller
+            app.controller('problem1Ctrl', function($scope, $compile) {
+                scope = $scope;
+                compile = $compile;
 
-                $window = $(window);
-                $problemEl = $('#stairs-1');
-                $problemEl.css({
-                    "style": "position:relative;"
-                });
-                $viewport = $('#stairs-1 > svg');
-                
-                $viewport.click(function(evt) {
-                    var offset_t = $viewport.offset().top - $window.scrollTop();
-                    var offset_l = $viewport.offset().left - $window.scrollLeft();
+                var $el = $('#stairsGraph');
+
+                // called when the "graph" is clicked (i.e. the image containing the stairs)
+                $scope.clickStairs = function(evt) {
+                    var offset_t = $el.offset().top - $window.scrollTop();
+                    var offset_l = $el.offset().left - $window.scrollLeft();
 
                     var x = Math.round( (evt.clientX - offset_l) );
                     var y = Math.round( (evt.clientY - offset_t) );
@@ -84,8 +73,8 @@
                     y = rangeY[1] - y;      // y is inverted
 
                     onClickStairs(x, y);
-                });
-            };
+                };
+            });
 
             var drawStairs = function() {
                 var nSteps = randRange(3, 6) * 1;
@@ -105,7 +94,7 @@
                     scale: [scale, scale]
                 });
 
-                // draw stairs
+                // compute stair path
                 var stairPath = [];
                 for (var i = 0; i < nSteps; ++i) {
                     var x = i * wStep;
@@ -116,21 +105,32 @@
 
                 //console.warn(stairPath);
 
+                // set style
+                style({ stroke: "#444444", "stroke-width": 1 });
+
+                // draw stairs
                 path(stairPath);
             };
 
 
             // ##########################################################################################
-            // Problem 1 events
+            // Problem 1 UI events
 
             /**
              * This method is called when the user clicks on the stairs at the given coordinates.
              */
             var onClickStairs = function(x, y) {
-                $xEl.text(x);
-                $yEl.text(y);
+                // store coordinates
+                scope.lastClick = [x, y];
+
+                // TODO: Compute which step was clicked
+
+                // TODO: Remember all clicked steps; but only allow some maximum number of clicks
 
                 // TODO: Maybe add labels on click (http://jsfiddle.net/2fwDJ/)
+                //          (or highlight clicked step)
+
+                // TODO: Somehow define what kind of answer the student should enter
             };
 
 
@@ -138,11 +138,26 @@
             // Problem 1 main
 
             (function main() {
-                // define the viewport
-                setupViewport();
+                // bootstrap angular and make problem1App available to the entire document
+                if (!window.bootstrapped) {
+                    // loading for the first time
+                    window.bootstrapped = 1;
+                    var $body = $('body');
 
-                // add Problem 1 GUI elements
-                addComponents();
+                    // append controller to body 
+                    // (because other elements do either not exist at run-time or are constantly replaced)
+                    $body.attr('ng-controller', 'problem1Ctrl');
+                    angular.bootstrap($body, ['problem1App']);
+                }
+                else {
+                    // re-loading (after problem was solved or so)
+                    setTimeout(function() {
+                        // re-compile Angular template, because the entire div has been replaced
+                        var $el = $('#problem1');
+                        var compiledHTML = compile($el, scope);
+                        $el.html(compiledHTML);
+                    });
+                }
 
                 // draw stairs
                 drawStairs();
@@ -152,26 +167,53 @@
 </head>
 <body>
     <div class="exercise">
-        <div class="vars">
-            <!-- <var id="NUMBER">Number(SIGN + INT + FRAC)</var> -->
+        <!-- Define random parameters that we will use later on -->
+        <div class="vars" data-ensure='Z !== 0'>
+            <var id="Z">randRange( 1, 9 )</var>
         </div>
 
         <div class="problems">
-            <!-- Stairs problem -->
-            <div id="stairs-q1">
+    <!-- 
+    ##########################################################################################
+    Problem 1 HTML
+    -->
+            <div id="problem1">
+                <!-- Problem Statement -->
                 <div class="question">
                     <p>Some question?</p>
                 </div>
-                <div class="problem">
-                    <div class="graphie" id="stairs-1">
-                        try {
-                            eval(runFunction(problem1, 'problem1'));
-                        }
-                        catch (err) {
-                            console.error(err.stack);
-                        }
+
+                <!-- Expected Solution -->
+                <div class="solution"><var>Z</var></div>
+                <p>Hint: Solution = <code><var>commafy(Z)</var></code></p>
+
+                <!-- The actual problem container -->
+                <div style="position:relative;">
+                    <!-- "Click" summary -->
+                    <div style="position:absolute; 
+                        left:0; top:0; 
+                        white-space: normal;
+                        border-style: solid;
+                        border-width: 1px;
+                        width: 80px;">
+                        <span>X:</span>
+                        <span>{{lastClick[0]}}</span><br/>
+                        <span>Y:</span>
+                        <span>{{lastClick[1]}}</span>
                     </div>
-                    <p style="font-size:70%; color:grey"><strong>NOTE:</strong> Angles not drawn to scale.</p>
+                    <div class="problem"
+                            style="position:relative;">
+                    <!-- Drawn graph (stairs) -->
+                        <div 
+                            id="stairsGraph"
+                            class="graphie"
+                            style="position:relative;"
+                            ng-click="clickStairs($event)">
+                            // the eval must happen in this element, so that injected local variables
+                            // will be available in the called function.
+                            eval(serializeFunctionCall(problem1, 'problem1'));
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

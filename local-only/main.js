@@ -1,6 +1,13 @@
 requirejs.config({
     paths: {
         "jquery": "../local-only/jquery",
+    },
+    shim: {
+        // angular does not support AMD out of the box, so we need to explicitely make
+        // sure that it's namespace is available (globally).
+        "angular": {
+            exports: "angular"
+        }
     }
 });
 
@@ -22,7 +29,10 @@ requirejs([
         "../local-only/jquery-migrate-1.1.1.js",
         "../local-only/jquery-ui.js",
         "../local-only/jquery.qtip.js",
-        "../local-only/i18n.js"
+        "../local-only/i18n.js",
+
+        // angular
+        "../third_party/angular/angular.min.js",
     ], function() {
         requirejs(["../khan-exercise.js"], function() {
             Khan.loadLocalModeSiteWhenReady();

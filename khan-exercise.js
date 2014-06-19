@@ -354,7 +354,7 @@ var Khan = {
         if (typeof console !== "undefined") {
             $.each(arguments, function(ix, arg) {
                 debugLog("error: " + arg);
-                console.error(arg);
+                console.error(arg.stack || arg);
             });
         }
     },
